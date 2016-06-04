@@ -1,6 +1,6 @@
 # java.util.Optional
 
-This is lightning talk I gave at a Chicago Java Users Group meeting. This was my second time speaking in public, and I feel like I learned a lot since my talk on Akka.
+This is lightning talk I gave at a Chicago Java Users Group meeting on June 2, 2016. This was my second time speaking in public, and I feel like I learned a lot since [my talk on Akka](https://github.com/tginsberg/what-is-akka).
 
 ### Slide Show
 
