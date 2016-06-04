@@ -1,0 +1,287 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>java.util.Optional: What and How</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+		<link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+		<link rel="stylesheet" href="css/overrides.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<!-- Introduction -->
+				<section>
+					<h1>java.util.Optional</h1>
+					<h3>What it is and how to use it</h3>
+					<p>
+						<small>
+						Created by <a href="http://ginsberg.com" target="_blank">Todd Ginsberg</a> 
+						for <a href="http://www.meetup.com/ChicagoJUG/events/230375291/" target="_blank">CJUG</a>
+						</small>
+						<br/>
+					    <small>2016-06-02</small>
+					</p>
+				</section>
+
+				<section>
+					<section>
+						<h2>What is java.util.Optional?</h2>
+						<ul>
+							<li class="fragment">Introduced in Java 8</li>
+							<li class="fragment">Intended to reduce NullPointerExceptions</li>
+							<li class="fragment">A <u>signal</u> to other developers that a value may not be present</li>
+							<li class="fragment">Container with zero or one elements</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>What isn't java.util.Optional?</h2>
+						<ul>
+							<li class="fragment">Not capable of storing null</li>
+							<li class="fragment">Not serializable!</li>
+							<li class="fragment">Not widely used in the JDK</li>
+						</ul>
+					</section>
+
+					<section>
+					    <blockquote cite="http://stackoverflow.com/questions/26327957/should-java-8-getters-return-optional-type/26328555#26328555">
+					    	"Our intention was to provide a limited mechanism for library method return types where there needed to be a 
+					    	clear way to represent "no result", and using null for such was overwhelmingly likely to cause errors."
+					    </blockquote>
+					    	<br/>
+					    	-- Brian Goetz
+					</section>
+
+					<section>
+					 	<h3>How did it get here?</h3>
+					 	Optional is mainly here to make stream terminal operations possible for empty streams.
+						<pre><code data-trim>
+new ArrayList&lt;String&gt;().stream().findFirst();
+						</code></pre>
+					</section>
+
+					<section>
+						<h3>Why not also add it to Map?</h3>
+						<pre><code data-trim>
+public interface Map&lt;K,V&gt; {
+
+    // ...
+
+    default Optional&lt;V&gt; getOptionally(K k) {
+        // ...
+    }
+}
+						</code></pre>
+						<div class="fragment">
+						Maps can contain null values!
+						<pre><code data-trim>
+Map&lt;String, String&gt; map = new HashMap&lt;&gt;();
+map.put("A",null);
+
+// Both look the same - no difference between not present and null.
+map.getOptionally("A");
+map.getOptionally("B");
+						</code></pre>
+
+						</div>
+
+					</section>
+				</section>
+
+				<section>
+					<h3>States</h3>
+					<table>
+						<tr>
+							<th>value</th>
+							<th>isEmpty()</th>
+							<th>isPresent()</th>
+							<th>.get()</th>
+						</tr>
+						<tr>
+							<td>not&nbsp;null</td>
+							<td>false</td>
+							<td>true</td>
+							<td>value</td>
+						</tr>
+						<tr>
+							<td>null</td>
+							<td>true</td>
+							<td>false</td>
+							<td>NoSuchElementException</td>
+						</tr>
+					</table>
+				</section>
+
+				<section>
+					<h3>Creation</h3>
+					Use one of the two built-in Factory methods
+					<pre><code data-trim>
+Optional&lt;String&gt; text = Optional.ofNullable("Hello, world!");
+					</code></pre>
+
+					<div class="fragment">
+						<h4>Or...</h4>
+						<pre><code data-trim>
+Optional&lt;String&gt; text = Optional.of(somethingThatIsntNull);
+						</code></pre>
+					</div>
+
+					<div class="fragment">
+						<pre><code data-trim>
+Optional&lt;String&gt; text = Optional.of(null);
+// -> NullPointerException
+						</code></pre>
+					</div>
+				</section>
+
+
+				<section>
+					<h3>When to use it</h3>
+					If you use it at all, only use it for return types where there is no natural way to represent "no result"
+					<pre><code data-trim>
+// Yes
+public Optional&lt;Customer&gt; getCustomerById(long id);
+					</code></pre>
+					<div class="fragment">
+						<pre><code data-trim>
+// No
+public Optional&lt;List&lt;Customer&gt;&gt; getCustomersForMonth(final YearMonth when);
+						</code></pre>
+					</div>
+					<div class="fragment">
+						<pre><code data-trim>
+// Prefer:
+public List&lt;Customer&gt; getCustomersForMonth(final YearMonth when);
+// -> Collections.emptyList();
+						</code></pre>
+					</div>
+				</section>
+
+
+				<section>
+					<section>
+						<h3>Don't call .get()!</h3>
+						<pre><code data-trim>
+Optional&lt;String&gt; text = service.getText();
+if(text.isPresent()) {
+    System.out.println(text.get());
+} else {
+    System.out.println("Hello, world!");
+}
+						</code></pre>
+						<div class="fragment">
+							Looks just like...
+							<pre><code data-trim>
+String text = service.getText();
+if(text != null) {
+    System.out.println(text);
+} else {
+    System.out.println("Hello, world!");
+}
+							</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<blockquote cite="http://stackoverflow.com/questions/26327957/should-java-8-getters-return-optional-type/26328555#26328555">
+						"In retrospect, we should have called get something like getOrElseThrowNoSuchElementException 
+						or something that made it far clearer that this was a highly dangerous method that undermined
+						the whole purpose of Optional in the first place. Lesson learned."
+						</blockquote>
+					    	<br/>
+					    	-- Brian Goetz
+					</section>
+
+					<section>
+						<h3>Use one of the safe methods instead!</h3>
+						<pre><code data-trim>
+Optional&lt;String&gt; text = service.getText();
+System.out.println(text.orElse("Hello, world!"));
+						</code></pre>
+						<div class="fragment">
+							<pre><code data-trim>
+Optional&lt;String&gt; text = service.getText();
+text.ifPresent(this::doSomethingWithText);
+							</code></pre>
+						</div>
+						<div class="fragment">
+							<pre><code data-trim>
+Optional&lt;String&gt; text = service.getText();
+System.out.println(text.orElseThrow(NoSuchElementException::new));
+							</code></pre>
+						</div>
+					</section>
+
+				</section>
+
+
+				<section>
+					<h3>When not to use it</h3>
+					<ul>
+						<li class="fragment">Method parameters</li>
+						<li class="fragment">Fields</li>
+						<li class="fragment">In any DTO or Entity, because it is not serializable</li>
+						<li class="fragment">If your customers are not using Java 8</li>
+						<li class="fragment">Possibly, don't use it at all!</li>
+					</ul>
+
+				</section>
+
+				<section>
+					<h3>Rules to remember</h3>
+					<ul>
+						<li class="fragment">When returning them, make <u>absolutely</u> sure they aren't null</li>
+						<li class="fragment">Don't call .get()</li>
+				</section>
+
+				<section data-transition="none">
+					<h1>Thanks!</h1>
+					<p>
+						<i class="fa fa-twitter"></i>&nbsp;<a href="https://twitter.com/ToddGinsberg" target="_blank">@ToddGinsberg</a>
+					</p>
+					<p>
+						<i class="fa fa-commenting"></i> <a href="http://bit.ly/FeedbackOptional" target="_blank">bit.ly/FeedbackOptional</a>
+					</p>
+				</section>				
+
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				//transition: 'none',
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,10 @@
+.reveal section img { 
+	background:none; border:none; box-shadow:none; 
+}
+h1, h2, h3 {
+  text-transform: none !important;
+}
+.reveal i.fa { 
+	font-family:FontAwesome; 
+	font-style: normal; 
+} 
