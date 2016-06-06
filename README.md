@@ -8,7 +8,10 @@ This slides for this presentation can be [viewed here](https://tginsberg.github.
 
 ### Video
 
-Coming soon!
+The folks at [Spantree](http://www.spantree.net/) were nice enough to record and host a video of the presentation. Check it out below!
+
+[![Video of Presentation](images/video.png)](https://vimeo.com/169545117)
+
 
 ### Feedback
 
